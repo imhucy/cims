@@ -1,0 +1,264 @@
+<div class="row">
+	<div id="breadcrumb" class="col-md-12">
+		<ol class="breadcrumb">
+			<li><a href="index.html">主页</a></li>
+			<li><a href="#">考勤管理</a></li>
+			<li><a href="#">修改考勤信息</a></li>
+		</ol>
+	</div>
+</div>
+<div class="row" >
+	<div class="col-xs-12">
+		<div class="box">
+			<div class="box-header">
+				<div class="box-name">
+					<i class="fa fa-table"></i>
+					<span>修改考勤信息</span>
+				</div>
+				<div class="box-icons">
+					<a class="collapse-link">
+						<i class="fa fa-chevron-up"></i>
+					</a>
+					<a class="expand-link">
+						<i class="fa fa-expand"></i>
+					</a>
+					<a class="close-link">
+						<i class="fa fa-times"></i>
+					</a>
+				</div>
+				<div class="no-move"></div>
+			</div>
+			<div class="box-content no-padding" id="attendance_add_table">
+				<table class="table table-bordered table-striped table-hover table-heading table-datatable" id="datatable-1" ng-controller="myController">
+					<thead>
+						<tr>
+							<th>考勤编号</th>
+							<th>学号</th>
+							<th>姓名</th>
+							<th>课程</th>
+							<th>教室</th>
+							<th>时间</th>
+							<th>考勤结果</th>
+							<th>操作</th>
+						</tr>
+					</thead>
+					<tbody>
+					<!-- Start: list_row -->
+						<tr ng-repeat="user in userInfo">
+							<td>{{user.id}}</td>
+							<td>{{user.student_id}}</td>
+							<td>{{user.student_name}}</td>
+							<td>{{user.course_id}}</td>
+							<td>{{user.address}}</td>
+							<td>{{user.time}}</td>
+							<td>{{user.result}}</td>
+							<td>
+								<button type="button" class="btn btn-primary setRole"><i class="fa fa-plus-square-o"></i> 修改</button>
+							</td>
+						</tr>
+					<!-- End: list_row -->
+					</tbody>
+					<tfoot>
+						<tr>
+							<th>考勤编号</th>
+							<th>学号</th>
+							<th>姓名</th>
+							<th>课程</th>
+							<th>教室</th>
+							<th>时间</th>
+							<th>考勤结果</th>
+							<th>操作</th>
+						</tr>
+					</tfoot>
+				</table>
+				
+			</div>
+		</div>
+	</div>
+</div>
+
+<script type="text/javascript">
+// Run Datables plugin and create 3 variants of settings
+function AllTables(){
+	TestTable1();
+	LoadSelect2Script(MakeSelect2);
+}
+function MakeSelect2(){
+	$('select').select2();
+	$('.dataTables_filter').each(function(){
+		$(this).find('label input[type=text]').attr('placeholder', '输入以检索表格');
+	});
+}
+
+function attendanceSet(event) {
+	var row = $(this).parent().parent();
+	
+	var attendance_id = row.children('td').eq(0).text();
+
+	var stu_num = row.children('td').eq(1).text();
+	
+	var stu_name = row.children('td').eq(2).text();
+	
+	var form = $('<form id="event_form" method="post" action="#" >'+
+					'<div class="form-group has-success has-feedback">'+
+						'<div class="form-group">'+
+							'<label class="col-sm-2 control-label">学号:</label>'+
+							'<div class="col-sm-4">'+
+								'<input type="text" value="'+stu_num+'" class="form-control" disabled>'+
+								'<input type="hidden" name="student_id" value="'+stu_num+'">'+
+								'<input type="hidden" name="attendance_id" value="'+attendance_id+'">'+
+							'</div>'+
+						'</div><br />'+
+						'<div class="form-group">'+
+							'<label class="col-sm-2 control-label">姓名:</label>'+
+							'<div class="col-sm-4">'+
+								'<input type="text" name="stu_name" value="'+stu_name+'" class="form-control" disabled>'+
+							'</div>'+
+						'</div><br />'+
+						'<div class="form-group">'+
+							'<label class="col-sm-2 control-label">考勤结果:</label>'+
+							'<div class="col-sm-4">'+
+								'<select id="select2" class="placeholder" name="result">'+
+									'<option value="" checked>已到</option>'+
+									'<option value="迟到">迟到</option>'+
+									'<option value="早退">早退</option>'+
+									'<option value="请假">请假</option>'+
+									'<option value="缺席">缺席</option>'+
+								'</select>'+
+							'</div>'+
+						'</div>'+
+						'<div class="form-group col-sm-12">'+
+							'<button type="button" id="event_submit" class="btn btn-primary col-sm-offset-4" ng-click="dataChange('+stu_num+')">'+
+								'确认修改'+
+							'</button>'	+
+						'</div>'+
+					'</div>'+
+				'</form>');
+
+	OpenModalBox('修改考勤信息', form);
+	// 任职选择，下拉菜单
+	$('#select2').select2();
+	// 提交处理事件
+	$('#event_submit').on('click', function(event){
+		event.preventDefault();
+		
+		// 视图修改
+		var a = $('#select2 option:checked').val();
+		if( a != '') {
+			row.children('td').eq(6).text(a);
+			// 数据库修改 Ajax处理
+				// 获取表单数据并序列化成json格式方便传输
+			var str = $('#event_form').serializeObject();
+			var json = JSON.stringify( str );
+			var jsondata = JSON.parse(json);
+			
+			$.ajax({
+				url: '/cims/update_attendance',
+				type: 'POST',
+				dataType: 'json',
+				data: jsondata
+			})
+			.done(function(data) {
+				alert('修改成功');
+			})
+			.fail(function() {
+				console.log("error");
+			})
+			.always(function() {
+				console.log("complete");
+			});
+			
+
+		}
+		
+		CloseModalBox();
+		return false;
+	});
+
+}
+
+function LoadAttendanceInfo(){
+	$.ajax({
+		url: '/cims/attendance_view',
+		type: 'POST',
+		dataType: 'json',
+		data:{class_id: $.cookie('class_id')}
+	})
+	.done(function( data ) {
+		LoadCourseInfo( data )
+	})
+	.fail(function() {
+		console.log("error");
+	})
+	.always(function() {
+		console.log("complete");
+	});
+}
+
+
+function LoadCourseInfo( AttendanceInfo ){
+	$.ajax({
+		url: '/cims/course_view',
+		type: 'POST',
+		dataType: 'json'
+	})
+	.done(function( data ) {
+		LoadUserInfo(AttendanceInfo , data);
+	})
+	.fail(function() {
+		console.log("error");
+	})
+	.always(function() {
+		console.log("complete");
+	});
+}
+
+
+function module_attendance_view(AttendanceInfo){
+	angular.module("attendance_view",[])
+	.controller("myController",function ( $scope ){
+		$scope.userInfo = AttendanceInfo;
+	});
+}
+
+
+function LoadUserInfo(AttendanceInfo , CourseInfo){
+	$.ajax({
+		url: '/cims/user_all',
+		type: 'POST',
+		dataType: 'json',
+		data:{class_id: $.cookie('class_id')}
+	})
+	.done(function( UserInfo ) {
+		for (var i = 0; i < AttendanceInfo.length; i++) {
+			AttendanceInfo[i].course_id = CourseInfo[ AttendanceInfo[i].course_id ].course_name;
+			AttendanceInfo[i].student_name = UserInfo[ AttendanceInfo[i].student_id - 1 ].student_name;
+		};
+		console.log(AttendanceInfo);
+		module_attendance_view( AttendanceInfo );
+		angular.bootstrap( $('#attendance_add_table') ,["attendance_view"]);
+
+		LoadDataTablesScripts(AllTables);
+
+		$('#attendance_add_table').delegate('.setRole','click' ,attendanceSet);
+	})
+	.fail(function() {
+		console.log("error");
+	})
+	.always(function() {
+		console.log("complete");
+	});
+}
+
+$(document).ready(function() {
+	
+	LoadAttendanceInfo();
+
+	// Load Datatables and run plugin on tables 
+		
+	
+	
+	// Add Drag-n-Drop feature
+	WinMove();
+});
+</script>

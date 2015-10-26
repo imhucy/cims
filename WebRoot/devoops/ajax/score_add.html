@@ -1,0 +1,224 @@
+<div class="row">
+	<div id="breadcrumb" class="col-md-12">
+		<ol class="breadcrumb">
+			<li><a href="index.html">主页</a></li>
+			<li><a href="#">成绩管理</a></li>
+			<li><a href="#">学生成绩录入</a></li>
+		</ol>
+	</div>
+</div>
+<div class="row" >
+	<div class="col-xs-12">
+		<div class="box">
+			<div class="box-header">
+				<div class="box-name">
+					<i class="fa fa-table"></i>
+					<span>学生成绩录入</span>
+				</div>
+				<div class="box-icons">
+					<a class="collapse-link">
+						<i class="fa fa-chevron-up"></i>
+					</a>
+					<a class="expand-link">
+						<i class="fa fa-expand"></i>
+					</a>
+					<a class="close-link">
+						<i class="fa fa-times"></i>
+					</a>
+				</div>
+				<div class="no-move"></div>
+			</div>
+			<div class="box-content no-padding" id="score_add_table">
+				<table class="table table-bordered table-striped table-hover table-heading table-datatable" id="datatable-1" ng-controller="myController">
+					<thead>
+						<tr>
+							<th>学号</th>
+							<th>姓名</th>
+							<th>性别</th>
+							<th>操作</th>
+						</tr>
+					</thead>
+					<tbody>
+					<!-- Start: list_row -->
+						<tr ng-repeat="user in userInfo">
+							<td>{{user.student_id}}</td>
+							<td>{{user.student_name}}</td>
+							<td>{{user.student_sex}}</td>
+							<td>
+								<button type="button" class="btn btn-primary operate"><i class="fa fa-plus-square-o"></i> 录入成绩</button>
+							</td>
+						</tr>
+					<!-- End: list_row -->
+					</tbody>
+					<tfoot>
+						<tr>
+							<th>学号</th>
+							<th>姓名</th>
+							<th>性别</th>
+							<th>操作</th>
+						</tr>
+					</tfoot>
+				</table>
+				
+			</div>
+		</div>
+	</div>
+</div>
+
+<script type="text/javascript">
+// Run Datables plugin and create 3 variants of settings
+function AllTables(){
+	TestTable1();
+	LoadSelect2Script(MakeSelect2);
+}
+function MakeSelect2(){
+	$('select').select2();
+	$('.dataTables_filter').each(function(){
+		$(this).find('label input[type=text]').attr('placeholder', '输入以检索表格');
+	});
+}
+
+function scoreAdd(event) {
+	var row = $(this).parent().parent();
+	
+	var stu_num = row.children('td').eq(0).text();
+	
+	var stu_name = row.children('td').eq(1).text();
+
+	var courseInfo = event.data;
+
+	var courseOption = '';
+
+	for (var i = 0; i < courseInfo.length; i++) {
+		courseOption += '<option value="'+ courseInfo[i].course_id +'">'+courseInfo[i].course_name+'</option>'
+	};
+	
+	var form = $('<form id="event_form" method="post" action="#" >'+
+					'<div class="form-group has-success has-feedback">'+
+						'<div class="form-group">'+
+							'<label class="col-sm-2 control-label">学号:</label>'+
+							'<div class="col-sm-4">'+
+								'<input type="text" value="'+stu_num+'" class="form-control" disabled>'+
+								'<input type="hidden" name="student_id" value="'+stu_num+'">'+
+							'</div>'+
+						'</div><br />'+
+						'<div class="form-group">'+
+							'<label class="col-sm-2 control-label">姓名:</label>'+
+							'<div class="col-sm-4">'+
+								'<input type="text" name="stu_name" value="'+stu_name+'" class="form-control" disabled>'+
+							'</div>'+
+						'</div><br />'+
+						'<div class="form-group">'+
+							'<label class="col-sm-2 control-label">课程:</label>'+
+							'<div class="col-sm-4">'+
+								'<select id="select1" class="placeholder" name="course_id">'+
+									courseOption+
+								'</select>'+
+							'</div>'+
+						'</div><br />'+
+						'<div class="form-group">'+
+							'<label class="col-sm-2 control-label">分数:</label>'+
+							'<div class="col-sm-4">'+
+								'<input type="text" name="score" class="form-control" />'+
+							'</div>'+
+						'</div><br />'+
+						
+						'<div class="form-group col-sm-12">'+
+							'<button type="button" id="event_submit" class="btn btn-primary col-sm-offset-4" ng-click="dataChange('+stu_num+')">'+
+								'确认添加' +
+							'</button>'	+
+						'</div>' +
+					'</div>' +
+				'</form>');
+
+	OpenModalBox('添加学生成绩', form);
+	// 任职选择，下拉菜单
+	$('#select2,#select1,#select3').select2();
+	// 提交处理事件
+	$('#event_submit').on('click', function(event){
+		event.preventDefault();
+		
+		var str = $('#event_form').serializeObject();
+		var json = JSON.stringify( str );
+		var jsondata = JSON.parse( json );
+		
+		console.log(jsondata);
+		$.ajax({
+			url: '/cims/score_add',
+			type: 'POST',
+			dataType: 'json',
+			data:jsondata
+		})
+		.done(function(data) {
+			console.log(data.msg);
+			alert('修改成功');
+		})
+		.fail(function() {
+			console.log("error");
+			alert('修改失败');
+		});
+		CloseModalBox();
+		
+	});
+
+}
+
+function LoadCourseInfo(  ){
+	$.ajax({
+		url: '/cims/course_view',
+		type: 'POST',
+		dataType: 'json'
+	})
+	.done(function( CourseInfo ) {
+		LoadUserInfo(CourseInfo);
+	})
+	.fail(function() {
+		console.log("error");
+	})
+	.always(function() {
+		console.log("complete");
+	});
+}
+
+
+function module_score_add(UserInfo){
+	angular.module("score_add",[])
+	.controller("myController",function ( $scope ){
+		$scope.userInfo = UserInfo;
+	});
+}
+
+
+function LoadUserInfo(CourseInfo){
+	$.ajax({
+		url: '/cims/user_all',
+		type: 'POST',
+		dataType: 'json',
+		data:{class_id: $.cookie('class_id')}
+	})
+	.done(function( UserInfo ) {
+		
+		console.log(UserInfo);
+		module_score_add( UserInfo );
+		angular.bootstrap( $('#score_add_table') ,["score_add"]);
+
+		LoadDataTablesScripts(AllTables);
+		
+		$('#score_add_table').delegate('.operate','click', CourseInfo,scoreAdd);
+	})
+	.fail(function() {
+		console.log("error");
+	})
+	.always(function() {
+		console.log("complete");
+	});
+}
+
+$(document).ready(function() {
+	
+	LoadCourseInfo();
+
+	// Add Drag-n-Drop feature
+	WinMove();
+});
+</script>

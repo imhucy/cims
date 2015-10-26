@@ -1,0 +1,95 @@
+<div class="row">
+	<div id="breadcrumb" class="col-md-12">
+		<ol class="breadcrumb">
+			<li><a href="index.html">主页</a></li>
+			<li><a href="#">活动管理</a></li>
+			<li><a href="#">查看活动</a></li>
+		</ol>
+	</div>
+</div>
+<div id="active_view">
+<div ng-controller="myController">
+  <div class="row" ng-repeat="active in actives">
+		<div class="col-xs-12">
+			<div class="box">
+				<div class="box-header">
+					<div class="box-name">
+						<i class="fa fa-table"></i>
+						<span>{{active.activity_name}}</span>
+					</div>
+					<div class="box-icons">
+						<a class="collapse-link">
+							<i class="fa fa-chevron-up"></i>
+						</a>
+						<a class="expand-link">
+							<i class="fa fa-expand"></i>
+						</a>
+						<a class="close-link">
+							<i class="fa fa-times"></i>
+						</a>
+					</div>
+					<div class="no-move"></div>
+				</div>
+				<div class="box-content">
+					<form action="#" method="post" id="InfoSet" class="form-horizontal" role="form">
+						<div class="form-group has-feedback">
+							<label class="col-sm-2 control-label">活动名称</label>
+							<div class="col-sm-4">
+								{{active.activity_name}}
+							</div>
+						</div>
+						<div class="form-group has-feedback">
+							<label class="col-sm-2 control-label">活动时间</label>
+							<div class="col-sm-4">
+								{{active.activity_time}}
+							</div>
+						</div>
+						
+						<div class="form-group has-feedback">
+							<label class="col-sm-2 control-label">活动地点</label>
+							<div class="col-sm-4">
+								{{active.activity_address}}
+							</div>
+						</div>
+						<div class="form-group">
+							<label class="col-sm-2 control-label" for="form-styles">活动内容</label>
+							<div class="col-sm-10">
+								{{active.activity_content}}
+							</div>
+						</div>
+					</form>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+</div>
+<script type="text/javascript">
+
+
+function DemoAngularModel(data){
+	angular.module("active_view",[])
+	.controller("myController",function ( $scope ){
+		$scope.actives = data;
+	});
+}
+$(document).ready(function() {
+
+	$.ajax({
+		type:'POST',
+		url:'/cims/active_view',
+		data:{class_id: $.cookie('class_id')},
+		dataType:'json',
+		success: function(data){
+			DemoAngularModel(data);
+			angular.bootstrap( $('#active_view') , ['active_view'] );
+		}
+	});
+	
+	$('.form-control').tooltip();
+
+	WinMove();
+	
+	
+});
+</script>

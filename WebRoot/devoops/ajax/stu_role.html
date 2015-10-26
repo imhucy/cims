@@ -1,0 +1,227 @@
+<div class="row">
+	<div id="breadcrumb" class="col-md-12">
+		<ol class="breadcrumb">
+			<li><a href="index.html">主页</a></li>
+			<li><a href="#">学员管理</a></li>
+			<li><a href="#">班干部任命</a></li>
+		</ol>
+	</div>
+</div>
+<div class="row" >
+	<div class="col-xs-12">
+		<div class="box">
+			<div class="box-header">
+				<div class="box-name">
+					<i class="fa fa-table"></i>
+					<span>指定班委</span>
+				</div>
+				<div class="box-icons">
+					<a class="collapse-link">
+						<i class="fa fa-chevron-up"></i>
+					</a>
+					<a class="expand-link">
+						<i class="fa fa-expand"></i>
+					</a>
+					<a class="close-link">
+						<i class="fa fa-times"></i>
+					</a>
+				</div>
+				<div class="no-move"></div>
+			</div>
+			<div class="box-content no-padding" id="stu_role_table">
+				<table class="table table-bordered table-striped table-hover table-heading table-datatable" id="datatable-1" ng-controller="myController">
+					<thead>
+						<tr>
+							<th>学号</th>
+							<th>姓名</th>
+							<th>性别</th>
+							<th>电话</th>
+							<th>任职</th>
+							<th>操作</th>
+						</tr>
+					</thead>
+					<tbody>
+					<!-- Start: list_row -->
+						<tr ng-repeat="user in userInfo">
+							<td>{{user.student_id}}</td>
+							<td>{{user.student_name}}</td>
+							<td>{{user.student_sex}}</td>
+							<td>{{user.telephone}}</td>
+							<td>{{user.posion}}</td>
+							<td>
+								<button type="button" class="btn btn-primary setRole" ><i class="fa fa-pencil"></i> 修改任职</button>
+							</td>
+						</tr>
+					<!-- End: list_row -->
+					</tbody>
+					<tfoot>
+						<tr>
+							<th>学号</th>
+							<th >姓名</th>
+							<th>性别</th>
+							<th>电话</th>
+							<th>任职</th>
+							<th>操作</th>
+						</tr>
+					</tfoot>
+				</table>
+				
+			</div>
+		</div>
+	</div>
+</div>
+
+<script type="text/javascript">
+// Run Datables plugin and create 3 variants of settings
+function AllTables(){
+	TestTable1();
+	LoadSelect2Script(MakeSelect2);
+}
+function MakeSelect2(){
+	$('select').select2();
+	$('.dataTables_filter').each(function(){
+		$(this).find('label input[type=text]').attr('placeholder', '输入以检索表格');
+	});
+}
+
+function setRole(event) {
+	var row = $(this).parent().parent();
+	
+	var stu_num = row.children('td').eq(0).text();
+	
+	var stu_name = row.children('td').eq(1).text();
+	
+	var roleOptions = '';
+
+	var roles = event.data;
+
+	for (var i = 0; i < roles.length; i++) {
+		roleOptions += '<option value="'+ roles[i].role_id +'">'+ roles[i].name +'</option>'
+	};
+
+	var form = $('<form id="event_form" method="post" action="#" >'+
+					'<div class="form-group has-success has-feedback">'+
+						'<div class="form-group">'+
+							'<label class="col-sm-2 control-label">学号:</label>'+
+							'<div class="col-sm-4">'+
+								'<input type="text" cims-test value="'+stu_num+'" class="form-control" disabled>'+
+								'<input type="hidden" name="student_id" value="'+stu_num+'">'+
+							'</div>'+
+						'</div><br />'+
+						'<div class="form-group">'+
+							'<label class="col-sm-2 control-label">姓名:</label>'+
+							'<div class="col-sm-4">'+
+								'<input type="text" name="student_name" value="'+stu_name+'" class="form-control" disabled>'+
+							'</div>'+
+						'</div><br />'+
+						'<div class="form-group">'+
+							'<label class="col-sm-2 control-label">修改任职:</label>'+
+							'<div class="col-sm-4">'+
+								'<select id="select2" class="placeholder" name="student_role">'+
+									roleOptions+
+								'</select>'+
+							'</div>'+
+						'</div>'+
+						'<div class="form-group col-sm-12">'+
+							'<button type="button" id="event_submit" class="btn btn-primary col-sm-offset-4">'+
+								'确认修改'+
+							'</button>'	+
+						'</div>'+
+					'</div>'+
+				'</form>');
+
+	OpenModalBox('修改任职', form);
+	// 任职选择，下拉菜单
+	$('#select2').select2();
+	
+	// 提交处理事件
+	$('#event_submit').on('click', function(event){
+		event.preventDefault();
+		
+		// 视图修改
+		var position = $('#select2 option:checked').text();
+
+		row.children('td').eq(4).text( position );
+		// 数据库修改 Ajax处理
+			// 序列化表单数据
+			var str = $('#event_form').serializeObject();
+			var json = JSON.stringify( str );
+			var jsonObj = JSON.parse( json );
+			console.log(jsonObj);
+		// 提交更新
+		upload_role(jsonObj);
+		
+		return false;
+	});
+
+}
+
+function upload_role(jsonObj){
+	$.ajax({
+			url: '/cims/update_role',
+			type: 'POST',
+			dataType: 'json',
+			data: jsonObj
+		})
+		.done(function() {
+			alert('修改成功');
+		})
+		.fail(function() {
+			alert('修改失败');
+		})
+		.always(function() {
+			CloseModalBox();
+		});
+}
+
+
+function module_stu_role(data){
+	angular.module("stu_role",[])
+	.controller("myController",function ( $scope ){
+		$scope.userInfo = data;
+	});
+}
+
+function LoadModule(){
+	$.ajax({
+		url: '/cims/user_all',
+		type: 'POST',
+		dataType: 'json',
+		data: {class_id: 1},
+		success:function(data){
+			LoadRole(data);
+		}
+	});
+}
+function LoadRole(list){
+	$.ajax({
+		url: '/cims/role_all',
+		type: 'POST',
+		dataType: 'json',
+		success:function(data){
+		/**
+			* @ param data :是所有的班委职位数据
+			* @ param list :是所有的学生数据
+			* 
+			*/
+			// 处理学生数据 使得所有的职位显示的是中文而不是id
+			for (var i = 0; i < list.length; i++) {
+				list[i].posion = data[ list[i].posion ].name;
+			};
+			// console.log( list[0] data[0].name);
+			module_stu_role(list);
+			angular.bootstrap( $('#stu_role_table') ,["stu_role"]);
+			LoadDataTablesScripts(AllTables);
+			
+			$('#stu_role_table').delegate( '.setRole','click',data,setRole );
+		}
+	})
+}
+$(document).ready(function() {
+	LoadModule();
+
+	// Add Drag-n-Drop feature
+	WinMove();
+
+});
+</script>

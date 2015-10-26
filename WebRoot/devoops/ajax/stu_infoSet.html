@@ -1,0 +1,212 @@
+<div class="row">
+	<div id="breadcrumb" class="col-md-12">
+		<ol class="breadcrumb">
+			<li><a href="index.html">主页</a></li>
+			<li><a href="#">学员管理</a></li>
+			<li><a href="#">个人信息设置</a></li>
+		</ol>
+	</div>
+</div>
+
+<div class="row">
+	<div class="col-xs-12">
+		<div class="box">
+			<div class="box-header">
+				<div class="box-name">
+					<i class="fa fa-table"></i>
+					<span>个人设置</span>
+				</div>
+				<!--<div class="box-icons">
+					<a class="beauty-table-to-json">
+						Table to JSON
+					</a>
+					<a class="collapse-link">
+						<i class="fa fa-chevron-up"></i>
+					</a>
+					<a class="expand-link">
+						<i class="fa fa-expand"></i>
+					</a>
+					<a class="close-link">
+						<i class="fa fa-times"></i>
+					</a>
+				</div>-->
+				<div class="no-move"></div>
+			</div>
+			<div class="box-content">
+				<form action="#" method="post" id="InfoSet" class="form-horizontal" role="form" ng-controller="stu_info_set">
+					<div class="form-group has-feedback">
+						<label class="col-sm-2 control-label">出生日期</label>
+						<div class="col-sm-4">
+							<input type="text" id="input_date" name="birth" class="form-control" placeholder="请选择你的出生日期">
+							<span class="fa fa-calendar txt-danger form-control-feedback"></span>
+						</div>
+					</div>
+					<div class="form-group">
+						<label class="col-sm-2 control-label">性别</label>
+						<div class="col-sm-4">
+							<div class="radio-inline">
+								<label>
+									<input type="radio" name="sex" value="男" checked /> 男
+									<i class="fa fa-circle-o"></i>
+								</label>
+							</div>
+							<div class="radio-inline">
+								<label>
+									<input type="radio" name="sex" value="女" /> 女
+									<i class="fa fa-circle-o"></i>
+								</label>
+							</div>
+						</div>
+					</div>
+					<div class="form-group">
+						<label class="col-sm-2 control-label">手机</label>
+						<div class="col-sm-4">
+							<input type="text" name="tel" placeholder="请输入您的手机号" class="form-control" data-original-title="" title="">
+						</div>
+					</div>
+					<div class="form-group">
+						<label class="col-sm-2 control-label">密码</label>
+						<div class="col-sm-4">
+							<input type="password" name="psw" placeholder="请输入要修改的密码" class="form-control" data-original-title="" title="">
+						</div>
+					</div>
+					<div class="form-group">
+						<label class="col-sm-2 control-label">密码重复</label>
+						<div class="col-sm-4">
+							<input type="password" name="repsw" placeholder="请再次输入要修改的密码" class="form-control" data-original-title="" title="">
+						</div>
+					</div>
+					<div class="form-group">
+						<div class="col-sm-9 col-sm-offset-3">
+							<button class="btn btn-primary" id="setBtn" type="button">修改</button>
+						</div>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+</div>
+<script type="text/javascript">
+
+// Run timepicker
+function DemoTimePicker(){
+	$('#input_time').timepicker({setDate: new Date()});
+}
+
+//
+// 个人信息设置 form validator function
+//
+function DemoFormValidatorInfoSet(){
+	$('#InfoSet').bootstrapValidator({
+		message: '非法的值',
+		fields: {
+			birth: {
+				validators: {
+					notEmpty: {
+						message: '不能为空'
+					},
+					date: {
+						format: 'YYYY-MM-DD',
+						message: '日期格式错误，请输入正确的日期格式 ： YYYY-MM-DD'
+					}
+				}
+			},
+			tel: {
+				validators: {
+					notEmpty: {
+						message: '电话号码不能为空'
+					},
+					digits:{
+						message: '请输入数字'
+					},
+					stringLength:{
+						min : 11,
+						max : 11,
+						message: '请输入正确的11位手机号码'
+					}
+				}
+			},
+			psw: {
+				validators: {
+					notEmpty: {
+						message: '密码不能为空'
+					},
+					stringLength:{
+						min : 6,
+						max : 20,
+						message: '密码长度应控制在6 ~ 20之间'
+					},
+					regexp: {
+                        regexp: /^[a-zA-Z0-9_]+$/,
+                        message: '密码必须由数字字母下划线组成'
+                    }
+				}
+			},
+			repsw: {
+				validators: {
+					notEmpty: {
+						message: '密码不能为空'
+					},
+					stringLength:{
+						min : 6,
+						max : 20,
+						message: '密码长度应控制在6 ~ 20之间'
+					},
+				    identical: {
+				    	field: 'psw',
+				    	message: '两次输入的密码不相同'
+				    }
+				}
+			}
+		}
+	});
+	
+	$('#setBtn').on('click',function(){
+		// 点击验证表单
+		$('#InfoSet').data('bootstrapValidator').validate()
+		// 如果验证成功了
+		if ( $('#InfoSet').data('bootstrapValidator').isValid() ){
+			// 获取表单数据并序列化成json格式方便传输
+			var str = $('#InfoSet').serializeObject();
+			var jsondata = JSON.parse( JSON.stringify( str ) );
+			jsondata.student_id = $('.avatar').data('user_info').student_id;
+			console.log(jsondata);
+			
+			$.ajax({
+				url: '/cims/stu_info_set',
+				type: 'POST',
+				dataType: 'json',
+				data: jsondata,
+				success: function(data) {
+					alert('修改成功');
+				},
+				error: function() {
+					alert('修改失败');
+				}
+			});
+			
+		}
+		
+	});
+}
+
+$(document).ready(function() {
+	// Create Wysiwig editor for textare
+	TinyMCEStart('#wysiwig_simple', null);
+	TinyMCEStart('#wysiwig_full', 'extreme');
+	// Add slider for change test input length
+	FormLayoutExampleInputLength($( ".slider-style" ));
+	// Initialize datepicker
+	$('#input_date').datepicker({dateFormat: "yy-mm-dd"});
+	// Load Timepicker plugin
+	LoadTimePickerScript(DemoTimePicker);
+	// Add tooltip to form-controls
+	$('.form-control').tooltip();
+
+	// Load example of form validation
+	LoadBootstrapValidatorScript(DemoFormValidatorInfoSet);
+	// Add drag-n-drop feature to boxes
+	WinMove();
+
+});
+</script>

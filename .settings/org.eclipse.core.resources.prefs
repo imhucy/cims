@@ -1,0 +1,13 @@
+#Fri Sep 11 13:04:52 CST 2015
+eclipse.preferences.version=1
+encoding//WebRoot/devoops/ajax=UTF-8
+encoding//WebRoot/devoops/ajax/active_add.html=UTF-8
+encoding//WebRoot/devoops/ajax/active_view.html=UTF-8
+encoding//WebRoot/devoops/ajax/attendance_add.html=UTF-8
+encoding//WebRoot/devoops/ajax/attendance_view.html=UTF-8
+encoding//WebRoot/devoops/ajax/score_add.html=UTF-8
+encoding//WebRoot/devoops/ajax/stu_infoSet.html=UTF-8
+encoding//src/com/cims/dao/impl/StudentDAOImpl.java=UTF-8
+encoding//src/com/cims/factory/DAOFactory.java=UTF-8
+encoding/<project>=UTF-8
+encoding/WebRoot=UTF-8

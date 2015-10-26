@@ -1,0 +1,106 @@
+<div class="row">
+	<div id="breadcrumb" class="col-md-12">
+		<ol class="breadcrumb">
+			<li><a href="index.html">主页</a></li>
+			<li><a href="#">班会管理</a></li>
+			<li><a href="#">查看班会记录</a></li>
+		</ol>
+	</div>
+</div>
+
+<div id="meeting_view">
+	<div ng-controller="myController">
+		<div class="row" ng-repeat="meeting in meetings">
+			<div class="col-xs-12">
+				<div class="box">
+					<div class="box-header">
+						<div class="box-name">
+							<i class="fa fa-table"></i>
+							<span>{{meeting.meeting_name}}</span>
+						</div>
+						<div class="box-icons">
+							<!--<a class="beauty-table-to-json">
+								Table to JSON
+							</a>-->
+							<a class="collapse-link">
+								<i class="fa fa-chevron-up"></i>
+							</a>
+							<a class="expand-link">
+								<i class="fa fa-expand"></i>
+							</a>
+							<a class="close-link">
+								<i class="fa fa-times"></i>
+							</a>
+						</div>
+						<div class="no-move"></div>
+					</div>
+					<div class="box-content">
+						<form action="#" method="post" id="InfoSet" class="form-horizontal" role="form">
+							
+							<div class="form-group">
+								<label class="col-sm-2 control-label">班会主题</label>
+								<div class="col-sm-4">
+									{{meeting.meeting_name}}
+								</div>
+							</div>
+							<div class="form-group">
+								<label class="col-sm-2 control-label">班会时间</label>
+								<div class="col-sm-4">
+									{{meeting.meeting_time}}
+								</div>
+							</div>
+							<div class="form-group">
+								<label class="col-sm-2 control-label">班会地点</label>
+								<div class="col-sm-4">
+									{{meeting.meeting_address}}
+								</div>
+							</div>
+							<div class="form-group">
+								<label class="col-sm-2 control-label" for="form-styles">班会内容</label>
+								<div class="col-sm-10">
+									{{meeting.meeting_content}}
+								</div>
+							</div>
+						</form>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<script type="text/javascript">
+function LoadAngularModel(data){
+	angular.module("meeting_view",[])
+	.controller("myController",function ( $scope ){
+		$scope.meetings = data;
+	});
+}
+
+function LoadMeetingInfo(){
+	$.ajax({
+		url: '/cims/class_meeting_view',
+		type: 'POST',
+		dataType: 'json',
+		data:{class_id : $.cookie('class_id')}
+	})
+	.done(function(MeetingInfo) {
+		LoadAngularModel(MeetingInfo);
+		angular.bootstrap( $('#meeting_view') , ['meeting_view'] );
+		
+		$('.collapse-link').click();
+
+	})
+	.fail(function() {
+		console.log("error");
+	});
+	
+}
+
+$(document).ready(function() {
+
+	LoadMeetingInfo();
+
+	WinMove();
+
+});
+</script>

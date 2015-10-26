@@ -1,0 +1,165 @@
+<div class="row">
+	<div id="breadcrumb" class="col-md-12">
+		<ol class="breadcrumb">
+			<li><a href="index.html">主页</a></li>
+			<li><a href="#">考勤管理</a></li>
+			<li><a href="#">查看考勤信息</a></li>
+		</ol>
+	</div>
+</div>
+<div class="row" >
+	<div class="col-xs-12">
+		<div class="box">
+			<div class="box-header">
+				<div class="box-name">
+					<i class="fa fa-table"></i>
+					<span>查看考勤信息</span>
+				</div>
+				<div class="box-icons">
+					<a class="collapse-link">
+						<i class="fa fa-chevron-up"></i>
+					</a>
+					<a class="expand-link">
+						<i class="fa fa-expand"></i>
+					</a>
+					<a class="close-link">
+						<i class="fa fa-times"></i>
+					</a>
+				</div>
+				<div class="no-move"></div>
+			</div>
+			<div class="box-content no-padding" id="attendance_add_table">
+				<table class="table table-bordered table-striped table-hover table-heading table-datatable" id="datatable-1" ng-controller="myController">
+					<thead>
+						<tr>
+							<th>学号</th>
+							<th>姓名</th>
+							<th>课程</th>
+							<th>教室</th>
+							<th>时间</th>
+							<th>考勤结果</th>
+						</tr>
+					</thead>
+					<tbody>
+					<!-- Start: list_row -->
+						<tr ng-repeat="user in userInfo">
+							<td>{{user.student_id}}</td>
+							<td>{{user.student_name}}</td>
+							<td>{{user.course_id}}</td>
+							<td>{{user.address}}</td>
+							<td>{{user.time}}</td>
+							<td>{{user.result}}</td>
+						</tr>
+					<!-- End: list_row -->
+					</tbody>
+					<tfoot>
+						<tr>
+							<th>学号</th>
+							<th>姓名</th>
+							<th>课程</th>
+							<th>教室</th>
+							<th>时间</th>
+							<th>考勤结果</th>
+						</tr>
+					</tfoot>
+				</table>
+				
+			</div>
+		</div>
+	</div>
+</div>
+
+<script type="text/javascript">
+// Run Datables plugin and create 3 variants of settings
+function AllTables(){
+	TestTable1();
+	LoadSelect2Script(MakeSelect2);
+}
+function MakeSelect2(){
+	$('select').select2();
+	$('.dataTables_filter').each(function(){
+		$(this).find('label input[type=text]').attr('placeholder', '输入以检索表格');
+	});
+}
+
+function LoadAttendanceInfo(){
+	$.ajax({
+		url: '/cims/attendance_view',
+		type: 'POST',
+		dataType: 'json',
+		data:{class_id: $.cookie('class_id')}
+	})
+	.done(function( data ) {
+		LoadCourseInfo( data )
+	})
+	.fail(function() {
+		console.log("error");
+	})
+	.always(function() {
+		console.log("complete");
+	});
+}
+
+
+function LoadCourseInfo( AttendanceInfo ){
+	$.ajax({
+		url: '/cims/course_view',
+		type: 'POST',
+		dataType: 'json'
+	})
+	.done(function( data ) {
+		LoadUserInfo(AttendanceInfo , data);
+	})
+	.fail(function() {
+		console.log("error");
+	})
+	.always(function() {
+		console.log("complete");
+	});
+}
+
+
+function module_attendance_view(AttendanceInfo){
+	angular.module("attendance_view",[])
+	.controller("myController",function ( $scope ){
+		$scope.userInfo = AttendanceInfo;
+	});
+}
+
+
+function LoadUserInfo(AttendanceInfo , CourseInfo){
+	$.ajax({
+		url: '/cims/user_all',
+		type: 'POST',
+		dataType: 'json',
+		data:{class_id: $.cookie('class_id')}
+	})
+	.done(function( UserInfo ) {
+		for (var i = 0; i < AttendanceInfo.length; i++) {
+			AttendanceInfo[i].course_id = CourseInfo[ AttendanceInfo[i].course_id ].course_name;
+			AttendanceInfo[i].student_name = UserInfo[ AttendanceInfo[i].student_id - 1 ].student_name;
+		};
+		console.log(AttendanceInfo);
+		module_attendance_view( AttendanceInfo );
+		angular.bootstrap( $('#attendance_add_table') ,["attendance_view"]);
+		LoadDataTablesScripts(AllTables);
+
+	})
+	.fail(function() {
+		console.log("error");
+	})
+	.always(function() {
+		console.log("complete");
+	});
+}
+/*
+ * MAIN FUNCTION
+ */
+$(document).ready(function() {
+
+	LoadAttendanceInfo();
+
+	WinMove();
+	
+});
+</script>

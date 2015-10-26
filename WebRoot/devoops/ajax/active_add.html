@@ -1,0 +1,183 @@
+<div class="row">
+	<div id="breadcrumb" class="col-md-12">
+		<ol class="breadcrumb">
+			<li><a href="index.html">主页</a></li>
+			<li><a href="#">活动管理</a></li>
+			<li><a href="#">添加活动</a></li>
+		</ol>
+	</div>
+</div>
+
+<div class="row">
+	<div class="col-xs-12">
+		<div class="box">
+			<div class="box-header">
+				<div class="box-name">
+					<i class="fa fa-table"></i>
+					<span>添加活动</span>
+				</div>
+				
+				<div class="no-move"></div>
+			</div>
+			<div class="box-content">
+				<form action="#" method="post" id="ActiveAdd" class="form-horizontal bv-form" role="form" novalidate="novalidate">
+					<div class="form-group has-feedback">
+						<input type="hidden" id="class_id" name="class_id" value="" />
+						<label class="col-sm-2 control-label">活动名称</label>
+						<div class="col-sm-4">
+							<input type="text" name="active_event" class="form-control" placeholder="请输入活动名称">
+						</div>
+					</div>
+					<div class="form-group has-feedback">
+						<label class="col-sm-2 control-label">活动时间</label>
+						<div class="col-sm-4">
+							<input type="text" id="input_date2" name="active_time" class="form-control" placeholder="请选择活动时间">
+							<span class="fa fa-calendar txt-danger form-control-feedback"></span>
+						</div>
+					</div>
+					<div class="form-group">
+						<label class="col-sm-2 control-label">活动经费</label>
+						<div class="col-sm-4">
+							<!--<input type="text" name="active_number" class="form-control" placeholder="缴费金额">-->
+							<div class="input-group">
+							  <span class="input-group-addon"><i class="fa fa-cny"></i></span>
+							  <input type="text" name="active_number" placeholder="Money" class="form-control" value="0" />
+							  <span class="input-group-addon"><i class="fa fa-money"></i></span>
+							</div>
+						</div>
+					</div>
+					<div class="form-group has-feedback">
+						<label class="col-sm-2 control-label">活动地点</label>
+						<div class="col-sm-4">
+							<input type="text" name="active_addr" class="form-control" placeholder="请输入活动地点">
+						</div>
+					</div>
+					<div class="form-group">
+						<label class="col-sm-2 control-label" for="form-styles">活动内容</label>
+						<div class="col-sm-10">
+							<!-- 写入数据库的时候要处理换行符 -->
+							<textarea name="active_content" class="form-control" rows="5" ></textarea>
+						</div>
+					</div>
+					<div class="form-group">
+						<div class="col-sm-9 col-sm-offset-3">
+							<button class="btn btn-primary" id="addBtn" type="button">添加</button>
+						</div>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+</div>
+<script type="text/javascript">
+// Run Select2 plugin on elements
+function DemoSelect2(){
+	$('#s2_country').select2();
+}
+// Run timepicker
+function DemoTimePicker(){
+	$('#input_time').timepicker({setDate: new Date()});
+}
+function DemoValidation_activeAdd(){
+	$('#ActiveAdd').bootstrapValidator({
+		message: '非法的值',
+		fields: {
+			active_event: {
+				validators: {
+					notEmpty: {
+						message: '不能为空'
+					},
+					stringLength:{
+						max : 20,
+						message: '名称不能超过20个字符'
+					}
+				}
+			},
+			active_time: {
+				validators: {
+					notEmpty: {
+						message: '不能为空'
+					},
+					date: {
+						format: 'YYYY-MM-DD',
+						message: '日期格式错误，请输入正确的日期格式 ： YYYY-MM-DD'
+					}
+				}
+			},
+			active_number: {
+				validators: {
+					notEmpty: {
+						message: '不能为空'
+					},
+					numeric:{
+						message:'必须是数字或小数'
+					}
+					
+				}
+			},
+			active_addr: {
+				validators: {
+					notEmpty: {
+						message: '不能为空'
+					},
+					stringLength:{
+						max : 50,
+						message: '不能超过50个字'
+					}
+				}
+			},
+			active_content: {
+				validators: {
+					notEmpty: {
+						message: '不能为空'
+					},
+					stringLength:{
+						max : 100,
+						message: '不能超过100个字'
+					}
+				}
+			}
+		}
+	});
+	$('#addBtn').on('click',function(){
+		// 点击验证表单
+		$('#ActiveAdd').data('bootstrapValidator').validate();
+		$('#class_id').val( $('.avatar').data('user_info').class_id );
+		// 如果验证成功了
+		if ( $('#ActiveAdd').data('bootstrapValidator').isValid() ){
+			// 获取表单数据并序列化成json格式方便传输
+			var str = $('#ActiveAdd').serializeObject();
+			var json = JSON.stringify( str );
+			var jsondata = JSON.parse( json );
+			jsondata.class_id = $.cookie('class_id');
+			console.log( json );
+			$.ajax({
+				type:'POST',
+				url:'/cims/active_add',
+				data: jsondata,
+				success:function(data){
+					console.log('success');
+					alert("添加成功");
+				},
+				error:function(){
+					console.log('error');
+				}
+			});
+		}
+	});
+}
+$(document).ready(function() {
+	// 初始化 日期选择器插件
+	$('#input_date2').datepicker({dateFormat: "yy-mm-dd"});
+	// Load 时间选择器 插件
+	LoadTimePickerScript(DemoTimePicker);
+	// Add tooltip to form-controls
+	$('.form-control').tooltip();
+	LoadSelect2Script(DemoSelect2);
+	// Load example of form validation
+	LoadBootstrapValidatorScript(DemoValidation_activeAdd);
+	// Add drag-n-drop feature to boxes
+	WinMove();
+	
+});
+</script>
